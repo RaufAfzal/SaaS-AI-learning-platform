@@ -1,0 +1,13 @@
+{
+  "folders": [
+	{
+		"name": "saas-app",
+		"path": ".."
+	},
+	{
+		"name": "public",
+		"path": "../../../Downloads/assets/public"
+	}
+],
+  "settings": {}
+}

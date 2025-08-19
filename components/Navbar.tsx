@@ -1,6 +1,15 @@
+"use client"; // Ensure client-side rendering for Clerk components
+
 import Link from "next/link";
 import Image from "next/image";
 import NavItems from "./NavItems";
+import {
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from "@clerk/nextjs";
 
 const Navbar = () => {
   return (
@@ -8,7 +17,7 @@ const Navbar = () => {
       <Link href="/" className="navbar-brand">
         <div className="flex items-center gap-2.5 cursor-pointer">
           <Image
-            src="images/logo.svg"
+            src="/images/logo.svg" // Ensure the path is correct
             alt="Converso Logo"
             width={46}
             height={44}
@@ -16,7 +25,19 @@ const Navbar = () => {
           />
         </div>
       </Link>
-      <NavItems />
+      <div className="flex items-center gap-8">
+        <NavItems />
+        <SignedOut>
+          <div className="flex items-center gap-4">
+            <SignInButton>
+              <button className="btn-signin">Sign In</button>
+            </SignInButton>
+          </div>
+        </SignedOut>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+      </div>
     </nav>
   );
 };
