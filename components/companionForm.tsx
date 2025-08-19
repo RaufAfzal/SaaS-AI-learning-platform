@@ -2,7 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { number, z } from "zod";
+import { z } from "zod";
+import { useRouter } from "next/navigation"; // Import useRouter for client-side navigation
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,31 +23,26 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { subjects } from "@/constants";
+import { createCompanion } from "@/lib/actions/companion.actions";
 
 const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Companion is required.",
-  }),
-  subject: z.string().min(2, {
-    message: "Subject is required.",
-  }),
-  topic: z.string().min(2, {
-    message: "Topic is required.",
-  }),
-  voice: z.string().min(2, {
-    message: "Voice is required.",
-  }),
-  style: z.string().min(2, {
-    message: "Style is required.",
-  }),
+  name: z
+    .string()
+    .min(2, { message: "Companion name must be at least 2 characters." }),
+  subject: z
+    .string()
+    .min(2, { message: "Subject must be at least 2 characters." }),
+  topic: z.string().min(2, { message: "Topic must be at least 2 characters." }),
+  voice: z.string().min(2, { message: "Voice must be at least 2 characters." }),
+  style: z.string().min(2, { message: "Style must be at least 2 characters." }),
   duration: z.coerce
     .number({ invalid_type_error: "Duration must be a valid number." })
-    .min(2, {
-      message: "Duration is required.",
-    }),
+    .min(2, { message: "Duration must be at least 2 minutes." }),
 });
 
 const CompanionForm = () => {
+  const router = useRouter(); // Initialize useRouter
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,9 +55,20 @@ const CompanionForm = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const companion = await createCompanion(values);
+      if (companion && companion.id) {
+        router.push(`/companions/${companion.id}`); // Use router.push for navigation
+      } else {
+        console.error("Failed to create a companion: No ID returned");
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Error creating companion:", error);
+      router.push("/");
+    }
+  };
 
   return (
     <main>
@@ -97,7 +104,7 @@ const CompanionForm = () => {
                   >
                     <FormControl>
                       <SelectTrigger className="input">
-                        <SelectValue placeholder="Select the voice" />
+                        <SelectValue placeholder="Select the subject" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -150,7 +157,7 @@ const CompanionForm = () => {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="femal">Female</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -173,26 +180,26 @@ const CompanionForm = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="formal">Fromal</SelectItem>
-                      <SelectItem value="casual">Causal</SelectItem>
+                      <SelectItem value="formal">Formal</SelectItem>
+                      <SelectItem value="casual">Casual</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="duration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Duration</FormLabel>
+                  <FormLabel>Duration (minutes)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       placeholder="15"
                       {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
                       className="input"
                     />
                   </FormControl>
@@ -200,7 +207,6 @@ const CompanionForm = () => {
                 </FormItem>
               )}
             />
-
             <Button type="submit">Submit</Button>
           </form>
         </Form>
