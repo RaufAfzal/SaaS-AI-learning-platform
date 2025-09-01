@@ -1,17 +1,52 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Input } from "./ui/input";
+import { useEffect, useState } from "react";
+import { formUrlQuery } from "@jsmastery/utils";
+import { removeKeysFromUrlQuery } from "@jsmastery/utils";
 
 const searchInput = () => {
   const pathname = usePathname();
-  const router = useRouter;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const query = searchParams.get("topic") || "";
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery) {
+        const newUrl = formUrlQuery({
+          params: searchParams.toString(),
+          key: "topic",
+          value: searchQuery,
+        });
+
+        router.push(newUrl, { scroll: false });
+      } else if (pathname === "/companions") {
+        const newUrl = removeKeysFromUrlQuery({
+          params: searchParams.toString(),
+          keysToRemove: ["topic"],
+        });
+
+        router.push(newUrl, { scroll: false });
+      }
+    }, 500);
+
+    delayDebounceFn;
+  }, [searchQuery, router, pathname, searchParams]);
 
   return (
     <div className="flex items-center  gap-2 rounded-[10px] border border-black py-[10px] px-[18px]">
       <Image src="/icons/search.svg" alt="search icon" width={15} height={15} />
-      <input placeholder="search your companions..." className="outline-none" />
+      <input
+        placeholder="search your companions..."
+        className="outline-none"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
     </div>
   );
 };
