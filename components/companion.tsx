@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn, getSubjectColor, configureAssistant } from "@/lib/utils";
 import Image from "next/image";
 import { vapi } from "@/lib/vapi.sdk";
@@ -30,6 +30,8 @@ const Companion = ({
 
   const [isMuted, setIsMuted] = useState<boolean>(false);
 
+  const [messages, setMessages] = useState<SavedMessage[]>([]);
+
   const LottieRef = useRef<LottieRefCurrentProps>(null);
 
   useEffect(() => {
@@ -51,7 +53,12 @@ const Companion = ({
       setCallStatus(CallStatus.FINISHED);
     };
 
-    const onMessage = () => {};
+    const onMessage = (message: Message) => {
+      if (message.type === 'transcript' && message.transcriptType === 'final') {
+        const newMessage = { role: message.role, content: message.transcript }
+        setMessages((prev) => [newMessage, ...prev])
+      }
+    }
 
     const onError = (error: Error) => {
       console.log("Call error: ", error);
@@ -169,11 +176,34 @@ const Companion = ({
               {callStatus === CallStatus.ACTIVE
                 ? "End Session"
                 : callStatus === CallStatus.CONNECTING
-                ? "Connecting"
-                : "Start Session"}
+                  ? "Connecting"
+                  : "Start Session"}
             </button>
           </div>
         </div>
+      </section>
+      <section className="transcript">
+        <div className="transcript-message no-scrollbar">
+          {messages.map((message, index) => {
+            if (message.role === 'assistant') {
+              return (
+                <p key={index} className="max-sm:text-sm">
+                  {
+                    name
+                      .split(' ')[0]
+                      .replace('/[.,]/g, ', '')
+                  }: {message.content}
+                </p>
+              )
+            } else {
+              return <p key={index} className="text-primary max-sm:text-sm">
+                {userName}: {message.content}
+              </p>
+            }
+          })}
+        </div>
+
+        {/* <div className="transcript-fade" /> */}
       </section>
     </section>
   );
