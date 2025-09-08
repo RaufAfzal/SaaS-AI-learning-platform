@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { formUrlQuery } from "@jsmastery/utils";
 import { removeKeysFromUrlQuery } from "@jsmastery/utils";
 
-const searchInput = () => {
+const SearchInput = () => {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -51,4 +51,4 @@ const searchInput = () => {
   );
 };
 
-export default searchInput;
+export default SearchInput;
