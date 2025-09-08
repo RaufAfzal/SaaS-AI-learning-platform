@@ -18,7 +18,7 @@ const Navbar = () => {
         <div className="flex items-center gap-2.5 cursor-pointer">
           <Image
             src="/images/logo.png"
-            alt="Converso Logo"
+            alt="Companio Logo"
             width={76}
             height={74}
             className="rounded-full"
