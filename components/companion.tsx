@@ -15,6 +15,29 @@ enum CallStatus {
   FINISHED = "FINISHED",
 }
 
+interface SavedMessage {
+  role: string;
+  content: string;
+}
+
+interface Message {
+  type: string;
+  transcriptType?: string;
+  role: string;
+  transcript: string;
+}
+
+interface CompanionComponentProps {
+  companionId: string;
+  subject: string;
+  name: string;
+  topic: string;
+  userName: string;
+  userImage: string;
+  voice: string;
+  style: string;
+}
+
 const Companion = ({
   companionId,
   subject,
@@ -26,21 +49,17 @@ const Companion = ({
   style,
 }: CompanionComponentProps) => {
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
-
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
-
   const [isMuted, setIsMuted] = useState<boolean>(false);
-
   const [messages, setMessages] = useState<SavedMessage[]>([]);
-
-  const LottieRef = useRef<LottieRefCurrentProps>(null);
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
 
   useEffect(() => {
-    if (LottieRef.current) {
+    if (lottieRef.current) {
       if (isSpeaking) {
-        LottieRef.current.play();
+        lottieRef.current.play();
       } else {
-        LottieRef.current.stop();
+        lottieRef.current.stop();
       }
     }
   }, [isSpeaking]);
@@ -56,11 +75,11 @@ const Companion = ({
     };
 
     const onMessage = (message: Message) => {
-      if (message.type === 'transcript' && message.transcriptType === 'final') {
-        const newMessage = { role: message.role, content: message.transcript }
-        setMessages((prev) => [newMessage, ...prev])
+      if (message.type === "transcript" && message.transcriptType === "final") {
+        const newMessage = { role: message.role, content: message.transcript };
+        setMessages((prev) => [newMessage, ...prev]);
       }
-    }
+    };
 
     const onError = (error: Error) => {
       console.log("Call error: ", error);
@@ -89,12 +108,12 @@ const Companion = ({
       vapi.off("speech-start", onSpeechStart);
       vapi.off("speech-end", onSpeechEnd);
     };
-  }, []);
+  }, [companionId]); // Fix: Added companionId to dependencies
 
   const toggleMicrophone = async () => {
-    const isMuted = vapi.isMuted();
-    vapi.setMuted(!isMuted);
-    setIsMuted(!isMuted);
+    const isCurrentlyMuted = vapi.isMuted();
+    vapi.setMuted(!isCurrentlyMuted);
+    setIsMuted(!isCurrentlyMuted);
   };
 
   const handleCall = async () => {
@@ -105,7 +124,7 @@ const Companion = ({
       serverMessages: [],
     };
 
-    // @ts-expect-error: vapi.start typing mismatch, accepted by SDK
+    // @ts-expect-error Temporarily suppress type error due to vapi.start signature mismatch
     vapi.start(configureAssistant(voice, style), assistantOverrides);
   };
 
@@ -113,6 +132,7 @@ const Companion = ({
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
   };
+
   return (
     <section className="flex flex-col h-[70vh]">
       <section className="flex gap-8 max-sm:flex-col">
@@ -126,7 +146,7 @@ const Companion = ({
               alt="companion icon"
               width={50}
               height={50}
-            ></Image>
+            />
             <div
               className={cn(
                 "absolute transition-opacity duration-1000",
@@ -134,7 +154,7 @@ const Companion = ({
               )}
             >
               <Lottie
-                lottieRef={LottieRef}
+                lottieRef={lottieRef}
                 animationData={soundwaves}
                 autoPlay={false}
                 className="companion-lottie"
@@ -147,11 +167,11 @@ const Companion = ({
           <div className="user-avatar">
             <Image
               src={userImage}
-              alt={"user image"}
+              alt="user image"
               height={130}
               width={130}
-            ></Image>
-            <p className="font-bold text-2xl">{name}</p>
+            />
+            <p className="font-bold text-2xl">{userName}</p>
           </div>
           <div className="flex flex-row gap-2">
             <button className="btn-mic" onClick={toggleMicrophone}>
@@ -162,7 +182,7 @@ const Companion = ({
                 height={20}
               />
               <p className="max-sm:hidden">
-                {isMuted ? "Turn on microphone" : "Turn of microphone"}
+                {isMuted ? "Turn on microphone" : "Turn off microphone"}
               </p>
             </button>
             <button
@@ -186,26 +206,20 @@ const Companion = ({
       </section>
       <section className="transcript">
         <div className="transcript-message no-scrollbar">
-          {messages.map((message, index) => {
-            if (message.role === 'assistant') {
-              return (
-                <p key={index} className="max-sm:text-sm">
-                  {
-                    name
-                      .split(' ')[0]
-                      .replace('/[.,]/g, ', '')
-                  }: {message.content}
-                </p>
-              )
-            } else {
-              return <p key={index} className="text-primary max-sm:text-sm">
-                {userName}: {message.content}
-              </p>
-            }
-          })}
+          {messages.map((message, index) => (
+            <p
+              key={index}
+              className={cn(
+                "max-sm:text-sm",
+                message.role === "assistant" ? "" : "text-primary"
+              )}
+            >
+              {message.role === "assistant"
+                ? `${name.split(" ")[0].replace(/[.,]/g, "")}: ${message.content}`
+                : `${userName}: ${message.content}`}
+            </p>
+          ))}
         </div>
-
-        {/* <div className="transcript-fade" /> */}
       </section>
     </section>
   );

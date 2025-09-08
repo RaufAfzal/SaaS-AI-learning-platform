@@ -10,7 +10,6 @@ const SearchInput = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get("topic") || "";
-
   const [searchQuery, setSearchQuery] = useState(query);
 
   useEffect(() => {
@@ -31,14 +30,14 @@ const SearchInput = () => {
       }
     }, 500);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, router, pathname, searchParams]);
+    return () => clearTimeout(delayDebounceFn); // Fix: Clean up the timeout
+  }, [searchQuery, pathname, searchParams, router]);
 
   return (
     <div className="flex items-center gap-2 rounded-[10px] border border-black py-[10px] px-[18px]">
       <Image src="/icons/search.svg" alt="search icon" width={15} height={15} />
       <input
-        placeholder="search your companions..."
+        placeholder="Search your companions..."
         className="outline-none"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}

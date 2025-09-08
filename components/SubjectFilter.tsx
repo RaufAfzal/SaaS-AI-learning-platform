@@ -37,7 +37,7 @@ const SubjectFilter = () => {
 
       router.push(newUrl, { scroll: false });
     }
-  }, [subject]);
+  }, [subject, router, searchParams]);
 
   return (
     <div>
