@@ -105,7 +105,7 @@ const Companion = ({
       serverMessages: [],
     };
 
-    // @ts-expect-error
+    // @ts-expect-error: vapi.start typing mismatch, accepted by SDK
     vapi.start(configureAssistant(voice, style), assistantOverrides);
   };
 
