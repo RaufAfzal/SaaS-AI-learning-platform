@@ -1,8 +1,6 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
-export default clerkMiddleware({
-  // Ensure the /companions route is protected or public as needed
-  publicRoutes: ["/"], // Adjust based on your needs
-});
+
+export default clerkMiddleware();
 
 export const config = {
   matcher: [

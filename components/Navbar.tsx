@@ -17,10 +17,10 @@ const Navbar = () => {
       <Link href="/" className="navbar-brand">
         <div className="flex items-center gap-2.5 cursor-pointer">
           <Image
-            src="/images/logo.svg" // Ensure the path is correct
+            src="/images/logo.png"
             alt="Converso Logo"
-            width={46}
-            height={44}
+            width={76}
+            height={74}
             className="rounded-full"
           />
         </div>
